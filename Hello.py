@@ -1,51 +1,72 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
-from streamlit.logger import get_logger
+import pandas as pd
+import plotly.express as px
 
-LOGGER = get_logger(__name__)
+from map import map_continent
+
+st.write("hello")
+
+# Read CSV files into DataFrames
+lifeexp_df = pd.read_csv('/workspaces/gapminder-data/files/lex.csv')
+pop_df = pd.read_csv('/workspaces/gapminder-data/files/pop.csv')
+gdp_df = pd.read_csv('/workspaces/gapminder-data/files/gdp_pcap.csv')
+
+# Melt each DataFrame to reshape
+lifeexp_df_melted = lifeexp_df.melt(id_vars=['country'], var_name='year', value_name='lifeExp')
+pop_df_melted = pop_df.melt(id_vars=['country'], var_name='year', value_name='pop')
+gdp_df_melted = gdp_df.melt(id_vars=['country'], var_name='year', value_name='gdpPercap')
+
+# Merge DataFrames
+merged_df = pd.merge(lifeexp_df_melted, pop_df_melted, on=['country', 'year'])
+merged_df = pd.merge(merged_df, gdp_df_melted, on=['country', 'year'])
+
+# st.dataframe(merged_df)
+
+merged_df['pop'] = merged_df['pop'].astype('string')
+merged_df['gdpPercap'] = merged_df['gdpPercap'].astype('string')
+# merged_df.dtypes
+
+def convert_population(pop_str):
+    if pop_str[-1]=='k':
+        return int(float(pop_str[:-1]) * 1000)  # Convert 'k' to thousands
+    elif pop_str[-1]=='M':
+        return int(float(pop_str[:-1]) * 1000000)  # Convert 'M' to millions
+    elif pop_str[-1]=='B':
+        return int(float(pop_str[:-1]) * 1000000000)  # Convert 'B' to billions
+    else:
+        return int(pop_str)  # For values without 'k' or 'M', convert directly to integer
+
+# Apply the conversion function to the 'population' column
+merged_df['pop'] = merged_df['pop'].apply(convert_population)
+merged_df['gdpPercap'] = merged_df['gdpPercap'].apply(convert_population)
+
+#convert year to integer
+merged_df['year'] = merged_df['year'].astype(str).astype(int)
 
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+# Create a new column 'continent' based on the 'country' column
+merged_df['continent'] = merged_df['country'].apply(map_continent)
 
-    st.write("# Welcome to Streamlit! 👋")
+merged_df.dropna()
+merged_df.drop(merged_df[merged_df['year'] > 2023].index, inplace = True)
 
-    st.sidebar.success("Select a demo above.")
+fig = px.scatter(
+    data_frame = merged_df,
+    x = "gdpPercap",
+    y = "lifeExp",
+    size = "pop",
+    color = "continent",
+    title = "test",
+    labels = { "gdpPercap" : "Wealth",
+               "lifeExp" : "Life Span"},
+    log_x = True,
+    hover_name = "country",
+    animation_frame = "year",
+    height = 600,
+    size_max = 100
+)
 
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
-
-
-if __name__ == "__main__":
-    run()
+fig.update_xaxes(range=[2.5,5.1])
+fig.update_yaxes(range=[10,95])
+fig.update_xaxes(fixedrange=True)
+fig.show()
