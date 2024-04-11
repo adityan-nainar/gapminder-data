@@ -2,6 +2,11 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+def wide_space_default():
+    st.set_page_config(layout='wide')
+
+wide_space_default()
+
 from map import map_continent
 
 st.write("hello")
@@ -65,13 +70,7 @@ fig = px.scatter(
     size_max = 100
 )
 
-fig.update_xaxes(range=[2.5,5.1])
-fig.update_yaxes(range=[10,105])
-autorangeChart() {
-        Plotly.relayout('plotly', {
-            'xaxis.autorange': true,
-            'yaxis.autorange': true
-        });
-    }
+fig.update_yaxes(range=[10,120])
+fig.update_xaxes(range=[2.5,5.5])
 st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 fig.show()
