@@ -66,6 +66,12 @@ fig = px.scatter(
 )
 
 fig.update_xaxes(range=[2.5,5.1])
-fig.update_yaxes(range=[10,95])
+fig.update_yaxes(range=[10,105])
+autorangeChart() {
+        Plotly.relayout('plotly', {
+            'xaxis.autorange': true,
+            'yaxis.autorange': true
+        });
+    }
 st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 fig.show()
