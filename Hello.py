@@ -62,11 +62,10 @@ fig = px.scatter(
     log_x = True,
     hover_name = "country",
     animation_frame = "year",
-    height = 600,
     size_max = 100
 )
 
 fig.update_xaxes(range=[2.5,5.1])
 fig.update_yaxes(range=[10,95])
-fig.update_xaxes(fixedrange=True)
+st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 fig.show()
