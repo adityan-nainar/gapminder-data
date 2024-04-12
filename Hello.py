@@ -12,9 +12,9 @@ from map import map_continent
 st.write("hello")
 
 # Read CSV files into DataFrames
-lifeexp_df = pd.read_csv('/files/lex.csv')
-pop_df = pd.read_csv('/files/pop.csv')
-gdp_df = pd.read_csv('/files/gdp_pcap.csv')
+lifeexp_df = pd.read_csv('files/lex.csv')
+pop_df = pd.read_csv('files/pop.csv')
+gdp_df = pd.read_csv('files/gdp_pcap.csv')
 
 # Melt each DataFrame to reshape
 lifeexp_df_melted = lifeexp_df.melt(id_vars=['country'], var_name='year', value_name='lifeExp')
