@@ -9,7 +9,10 @@ wide_space_default()
 
 from map import map_continent
 
-st.write("hello")
+st.title("Wealth vs Life 1800-2023")
+st.write('GDP per capita vs Lifespan of countries from 1800 to 2023')
+  
+# st.divider()
 
 # Read CSV files into DataFrames
 lifeexp_df = pd.read_csv('files/lex.csv')
@@ -21,11 +24,8 @@ lifeexp_df_melted = lifeexp_df.melt(id_vars=['country'], var_name='year', value_
 pop_df_melted = pop_df.melt(id_vars=['country'], var_name='year', value_name='pop')
 gdp_df_melted = gdp_df.melt(id_vars=['country'], var_name='year', value_name='gdpPercap')
 
-# Merge DataFrames
 merged_df = pd.merge(lifeexp_df_melted, pop_df_melted, on=['country', 'year'])
 merged_df = pd.merge(merged_df, gdp_df_melted, on=['country', 'year'])
-
-# st.dataframe(merged_df)
 
 merged_df['pop'] = merged_df['pop'].astype('string')
 merged_df['gdpPercap'] = merged_df['gdpPercap'].astype('string')
@@ -41,13 +41,11 @@ def convert_population(pop_str):
     else:
         return int(pop_str)  # For values without 'k' or 'M', convert directly to integer
 
-# Apply the conversion function to the 'population' column
 merged_df['pop'] = merged_df['pop'].apply(convert_population)
 merged_df['gdpPercap'] = merged_df['gdpPercap'].apply(convert_population)
 
 #convert year to integer
 merged_df['year'] = merged_df['year'].astype(str).astype(int)
-
 
 # Create a new column 'continent' based on the 'country' column
 merged_df['continent'] = merged_df['country'].apply(map_continent)
@@ -61,9 +59,8 @@ fig = px.scatter(
     y = "lifeExp",
     size = "pop",
     color = "continent",
-    title = "test",
-    labels = { "gdpPercap" : "Wealth",
-               "lifeExp" : "Life Span"},
+    labels = { "gdpPercap": "Wealth ($)",
+               "lifeExp": "Life Span (years)"},
     log_x = True,
     hover_name = "country",
     animation_frame = "year",
@@ -74,3 +71,9 @@ fig.update_yaxes(range=[10,120])
 fig.update_xaxes(range=[2.5,5.5])
 st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 fig.show()
+
+st.divider()
+
+st.markdown('*Source - Gapminder Foundation*')
+st.link_button("View source", "https://www.gapminder.org/data/")
+
